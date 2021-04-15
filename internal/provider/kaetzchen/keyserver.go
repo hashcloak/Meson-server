@@ -114,7 +114,7 @@ func (k *kaetzchenKeyserver) Halt() {
 func (k *kaetzchenKeyserver) encodeResp(resp *keyserverResponse) []byte {
 	var out []byte
 	enc := codec.NewEncoderBytes(&out, &k.jsonHandle)
-	enc.Encode(resp)
+	_ = enc.Encode(resp)
 	return out
 }
 

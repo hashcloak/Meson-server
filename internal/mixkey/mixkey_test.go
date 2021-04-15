@@ -140,7 +140,7 @@ func doBenchIsReplayMiss(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 		var tag [TagLength]byte
-		rand.Read(tag[:])
+		_, _ = rand.Read(tag[:])
 		b.StartTimer()
 
 		if k.IsReplay(tag[:]) {
@@ -163,7 +163,7 @@ func doBenchIsReplayHit(b *testing.B) {
 	defer k.Deref()
 
 	var tag [TagLength]byte
-	rand.Read(tag[:])
+	_, _ = rand.Read(tag[:])
 	k.IsReplay(tag[:]) // Add as a replay.
 	k.doFlush(true)    // Flush the write-back cache.
 
@@ -190,7 +190,7 @@ func init() {
 	testPositiveTags = make(map[[TagLength]byte]bool)
 	for i := 0; i < 10; {
 		var tag [TagLength]byte
-		rand.Read(tag[:])
+		_, _ = rand.Read(tag[:])
 		if !testPositiveTags[tag] {
 			testPositiveTags[tag] = true
 			i++
@@ -200,7 +200,7 @@ func init() {
 	testNegativeTags = make(map[[TagLength]byte]bool)
 	for i := 0; i < 10; {
 		var tag [TagLength]byte
-		rand.Read(tag[:])
+		_, _ = rand.Read(tag[:])
 		if !testPositiveTags[tag] && !testNegativeTags[tag] {
 			testNegativeTags[tag] = true
 			i++

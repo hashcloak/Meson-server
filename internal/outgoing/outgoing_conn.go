@@ -275,13 +275,13 @@ func (c *outgoingConn) onConnEstablished(conn net.Conn, closeCh <-chan struct{})
 
 	// Bind the session to the conn, handshake, authenticate.
 	timeoutMs := time.Duration(c.co.glue.Config().Debug.HandshakeTimeout) * time.Millisecond
-	conn.SetDeadline(time.Now().Add(timeoutMs))
+	_ = conn.SetDeadline(time.Now().Add(timeoutMs))
 	if err = w.Initialize(conn); err != nil {
 		c.log.Errorf("Handshake failed: %v", err)
 		return
 	}
 	c.log.Debugf("Handshake completed.")
-	conn.SetDeadline(time.Time{})
+	_ = conn.SetDeadline(time.Time{})
 	c.retryDelay = 0 // Reset the retry delay on successful handshakes.
 
 	// Since outgoing connections have no reverse traffic, read from the

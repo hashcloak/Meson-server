@@ -23,9 +23,9 @@ import (
 	"fmt"
 	"sync"
 
-	bolt "go.etcd.io/bbolt"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/server/userdb"
+	bolt "go.etcd.io/bbolt"
 )
 
 const (
@@ -201,7 +201,7 @@ func (d *boltUserDB) Remove(u []byte) error {
 }
 
 func (d *boltUserDB) Close() {
-	d.db.Sync()
+	_ = d.db.Sync()
 	d.db.Close()
 }
 
@@ -242,7 +242,7 @@ func New(f string) (userdb.UserDB, error) {
 			}
 
 			// Populate the user cache.
-			uBkt.ForEach(func(k, v []byte) error {
+			_ = uBkt.ForEach(func(k, v []byte) error {
 				u := userToCacheKey(k)
 				d.userCache[u] = true
 				return nil
@@ -252,7 +252,7 @@ func New(f string) (userdb.UserDB, error) {
 		}
 
 		// We created a new database, so populate the new `metadata` bucket.
-		bkt.Put([]byte(versionKey), []byte{0})
+		_ = bkt.Put([]byte(versionKey), []byte{0})
 
 		return nil
 	}); err != nil {

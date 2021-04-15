@@ -29,11 +29,11 @@ import (
 	"time"
 
 	"git.schwanenlied.me/yawning/bloom.git"
-	bolt "go.etcd.io/bbolt"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/rand"
 	"github.com/katzenpost/core/epochtime"
 	"github.com/katzenpost/core/worker"
+	bolt "go.etcd.io/bbolt"
 )
 
 const (
@@ -168,7 +168,7 @@ func testAndSetTagDB(bkt *bolt.Bucket, tag []byte) bool {
 	// Write the (potentially incremented) counter.
 	var seenBytes [8]byte
 	binary.LittleEndian.PutUint64(seenBytes[:], seenCount)
-	bkt.Put(tag, seenBytes[:])
+	_ = bkt.Put(tag, seenBytes[:])
 	return seenCount != 1
 }
 
@@ -263,7 +263,7 @@ func (k *MixKey) forceClose() {
 		k.Halt()
 
 		// Force the DB to disk, and close.
-		k.db.Sync()
+		_ = k.db.Sync()
 		k.db.Close()
 		k.db = nil
 
@@ -361,7 +361,7 @@ func New(dataDir string, epoch uint64) (*MixKey, error) {
 			}
 
 			// Rebuild the bloom filter.
-			replayBkt.ForEach(func(tag, rawCount []byte) error {
+			_ = replayBkt.ForEach(func(tag, rawCount []byte) error {
 				k.f.TestAndSet(tag)
 				return nil
 			})
@@ -379,9 +379,9 @@ func New(dataDir string, epoch uint64) (*MixKey, error) {
 		binary.LittleEndian.PutUint64(epochBytes[:], epoch)
 
 		// Stash the version/key/epoch in the metadata bucket.
-		bkt.Put([]byte(versionKey), []byte{0})
-		bkt.Put([]byte(pkKey), k.keypair.Bytes())
-		bkt.Put([]byte(epochKey), epochBytes[:])
+		_ = bkt.Put([]byte(versionKey), []byte{0})
+		_ = bkt.Put([]byte(pkKey), k.keypair.Bytes())
+		_ = bkt.Put([]byte(epochKey), epochBytes[:])
 
 		return nil
 	}); err != nil {
@@ -390,7 +390,7 @@ func New(dataDir string, epoch uint64) (*MixKey, error) {
 	}
 	if didCreate {
 		// Flush the newly created database to disk.
-		k.db.Sync()
+		_ = k.db.Sync()
 	}
 
 	k.Go(k.worker)

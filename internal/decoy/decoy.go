@@ -325,8 +325,8 @@ func (d *decoy) sendLoopPacket(doc *pki.Document, recipient []byte, src, dst *pk
 				return
 			}
 
-			d.logPath(doc, fwdPath)
-			d.logPath(doc, revPath)
+			_ = d.logPath(doc, fwdPath)
+			_ = d.logPath(doc, revPath)
 			d.log.Debugf("Dispatching loop packet: SURB ID: 0x%08x", binary.BigEndian.Uint64(surbID[8:]))
 
 			d.dispatchPacket(fwdPath, pkt)
@@ -355,7 +355,7 @@ func (d *decoy) sendDiscardPacket(doc *pki.Document, recipient []byte, src, dst 
 				d.log.Debugf("Failed to generate Sphinx packet: %v", err)
 				return
 			}
-			d.logPath(doc, fwdPath)
+			_ = d.logPath(doc, fwdPath)
 			d.dispatchPacket(fwdPath, pkt)
 			return
 		}

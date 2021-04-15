@@ -198,13 +198,13 @@ func (c *incomingConn) worker() {
 
 	// Bind the session to the conn, handshake, authenticate.
 	timeoutMs := time.Duration(c.l.glue.Config().Debug.HandshakeTimeout) * time.Millisecond
-	c.c.SetDeadline(time.Now().Add(timeoutMs))
+	_ = c.c.SetDeadline(time.Now().Add(timeoutMs))
 	if err = c.w.Initialize(c.c); err != nil {
 		c.log.Errorf("Handshake failed: %v", err)
 		return
 	}
 	c.log.Debugf("Handshake completed.")
-	c.c.SetDeadline(time.Time{})
+	_ = c.c.SetDeadline(time.Time{})
 	c.l.onInitializedConn(c)
 
 	// Log the connection source.

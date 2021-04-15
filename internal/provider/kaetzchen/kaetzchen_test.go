@@ -272,7 +272,7 @@ func TestKaetzchenWorker(t *testing.T) {
 		receivedCh: make(chan bool),
 	}
 
-	kaetzWorker.registerKaetzchen(mockService)
+	_ = kaetzWorker.registerKaetzchen(mockService)
 
 	recipient := [sConstants.RecipientIDLength]byte{}
 	copy(recipient[:], []byte("+test"))

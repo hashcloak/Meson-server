@@ -173,7 +173,7 @@ func (k *CBORPluginWorker) KaetzchenForPKI() ServiceMap {
 	s := make(ServiceMap)
 	for _, k := range k.clients {
 		capa := k.Capability()
-		if _, ok :=  s[capa]; ok {
+		if _, ok := s[capa]; ok {
 			// skip adding twice
 			continue
 		}

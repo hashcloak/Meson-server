@@ -56,10 +56,10 @@ import (
 	"gopkg.in/op/go-logging.v1"
 )
 
-type registerIdentityRequest struct {
-	User              string
-	IdentityPublicKey string
-}
+// type registerIdentityRequest struct {
+// 	User              string
+// 	IdentityPublicKey string
+// }
 
 type provider struct {
 	sync.Mutex
@@ -643,7 +643,7 @@ func (p *provider) processLinkRegistration(user []byte, response http.ResponseWr
 
 	// Send a response back to the client.
 	message := "OK\n"
-	response.Write([]byte(message))
+	_, _ = response.Write([]byte(message))
 }
 
 func (p *provider) processIdentityRegistration(user []byte, response http.ResponseWriter, request *http.Request) {
@@ -696,7 +696,7 @@ func (p *provider) processIdentityRegistration(user []byte, response http.Respon
 
 	// Send a response back to the client.
 	message := "OK\n"
-	response.Write([]byte(message))
+	_, _ = response.Write([]byte(message))
 }
 
 func (p *provider) stopUserRegistrationHTTP() {

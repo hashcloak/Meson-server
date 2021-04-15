@@ -58,7 +58,7 @@ func TestIsValid(t *testing.T) {
 	e, _ := New(ts.URL)
 
 	key := ecdh.PublicKey{}
-	key.FromString("B2E3ABEE63BCF7BAC4DCD232C4852F90FA458B4269B673C76C4DE02D0D24402C")
+	_ = key.FromString("B2E3ABEE63BCF7BAC4DCD232C4852F90FA458B4269B673C76C4DE02D0D24402C")
 	u := []byte("testuser")
 	if !e.IsValid(u, &key) {
 		t.Errorf("user should be valid")
@@ -72,7 +72,7 @@ func TestIsNotValid(t *testing.T) {
 	e, _ := New(ts.URL)
 
 	key := ecdh.PublicKey{}
-	key.FromString("B2E3ABEE63BCF7BAC4DCD232C4852F90FA458B4269B673C76C4DE02D0D24402C")
+	_ = key.FromString("B2E3ABEE63BCF7BAC4DCD232C4852F90FA458B4269B673C76C4DE02D0D24402C")
 	u := []byte("testuser")
 	if e.IsValid(u, &key) {
 		t.Errorf("user should not be valid")
@@ -81,6 +81,6 @@ func TestIsNotValid(t *testing.T) {
 
 func httpMock(response string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(response))
+		_, _ = w.Write([]byte(response))
 	}))
 }

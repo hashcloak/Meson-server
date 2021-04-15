@@ -249,7 +249,7 @@ func New(cfg *config.Config) (*Server, error) {
 	if s.cfg.Debug.IdentityKey != nil {
 		s.log.Warning("IdentityKey should NOT be used for production deployments.")
 		s.identityKey = new(eddsa.PrivateKey)
-		s.identityKey.FromBytes(s.cfg.Debug.IdentityKey.Bytes())
+		_ = s.identityKey.FromBytes(s.cfg.Debug.IdentityKey.Bytes())
 	} else {
 		identityPrivateKeyFile := filepath.Join(s.cfg.Server.DataDir, "identity.private.pem")
 		identityPublicKeyFile := filepath.Join(s.cfg.Server.DataDir, "identity.public.pem")
@@ -384,7 +384,7 @@ func New(cfg *config.Config) (*Server, error) {
 	// subsystem that wants to register commands has had the opportunity to do
 	// so.
 	if s.management != nil {
-		s.management.Start()
+		_ = s.management.Start()
 	}
 
 	isOk = true

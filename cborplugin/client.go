@@ -98,7 +98,7 @@ type Client struct {
 	socketPath string
 	endpoint   string
 	capability string
-	params     *Parameters
+	// params     *Parameters
 }
 
 // New creates a new plugin client instance which represents the single execution
@@ -127,7 +127,7 @@ func (c *Client) Start(command string, args []string) error {
 
 func (c *Client) worker() {
 	<-c.HaltCh()
-	c.cmd.Process.Signal(syscall.SIGTERM)
+	_ = c.cmd.Process.Signal(syscall.SIGTERM)
 	err := c.cmd.Wait()
 	if err != nil {
 		c.log.Errorf("CBOR plugin worker, command exec error: %s\n", err)
