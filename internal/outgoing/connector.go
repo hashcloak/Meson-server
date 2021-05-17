@@ -21,11 +21,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashcloak/Meson-server/internal/debug"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/packet"
 	"github.com/katzenpost/core/sphinx/constants"
 	"github.com/katzenpost/core/worker"
-	"github.com/katzenpost/server/internal/debug"
-	"github.com/katzenpost/server/internal/glue"
-	"github.com/katzenpost/server/internal/packet"
 	"gopkg.in/op/go-logging.v1"
 )
 

@@ -29,6 +29,11 @@ import (
 	"time"
 
 	"git.schwanenlied.me/yawning/avl.git"
+	internalConstants "github.com/hashcloak/Meson-server/internal/constants"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/packet"
+	"github.com/hashcloak/Meson-server/internal/pkicache"
+	"github.com/hashcloak/Meson-server/internal/provider/kaetzchen"
 	"github.com/katzenpost/core/constants"
 	"github.com/katzenpost/core/crypto/rand"
 	"github.com/katzenpost/core/epochtime"
@@ -39,11 +44,6 @@ import (
 	sConstants "github.com/katzenpost/core/sphinx/constants"
 	"github.com/katzenpost/core/sphinx/path"
 	"github.com/katzenpost/core/worker"
-	internalConstants "github.com/katzenpost/server/internal/constants"
-	"github.com/katzenpost/server/internal/glue"
-	"github.com/katzenpost/server/internal/packet"
-	"github.com/katzenpost/server/internal/pkicache"
-	"github.com/katzenpost/server/internal/provider/kaetzchen"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/op/go-logging.v1"
 )

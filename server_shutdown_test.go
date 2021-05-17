@@ -21,9 +21,9 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/hashcloak/Meson-server/config"
 	"github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/crypto/rand"
-	"github.com/katzenpost/server/config"
 	"github.com/stretchr/testify/assert"
 )
 

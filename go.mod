@@ -1,4 +1,4 @@
-module github.com/katzenpost/server
+module github.com/hashcloak/Meson-server
 
 go 1.13
 

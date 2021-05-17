@@ -24,8 +24,8 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/katzenpost/server"
-	"github.com/katzenpost/server/config"
+	"github.com/hashcloak/Meson-server"
+	"github.com/hashcloak/Meson-server/config"
 )
 
 func main() {

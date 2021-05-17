@@ -27,6 +27,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashcloak/Meson-server/config"
+	"github.com/hashcloak/Meson-server/internal/constants"
+	"github.com/hashcloak/Meson-server/internal/debug"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/pkicache"
 	nClient "github.com/katzenpost/authority/nonvoting/client"
 	vClient "github.com/katzenpost/authority/voting/client"
 	"github.com/katzenpost/core/crypto/ecdh"
@@ -36,11 +41,6 @@ import (
 	sConstants "github.com/katzenpost/core/sphinx/constants"
 	"github.com/katzenpost/core/wire"
 	"github.com/katzenpost/core/worker"
-	"github.com/katzenpost/server/config"
-	"github.com/katzenpost/server/internal/constants"
-	"github.com/katzenpost/server/internal/debug"
-	"github.com/katzenpost/server/internal/glue"
-	"github.com/katzenpost/server/internal/pkicache"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/op/go-logging.v1"
 )
