@@ -37,6 +37,7 @@ import (
 	"github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/pki"
 	"github.com/katzenpost/core/utils"
+	"github.com/tendermint/tendermint/light"
 	"golang.org/x/net/idna"
 	"golang.org/x/text/secure/precis"
 )
@@ -718,24 +719,33 @@ type Peer struct {
 	LinkPublicKey     string
 }
 
-func (p *Peer) validate() error {
-	for _, address := range p.Addresses {
-		if err := utils.EnsureAddrIPPort(address); err != nil {
-			return fmt.Errorf("Voting Peer: Address is invalid: %v", err)
-		}
-	}
-	var pubKey eddsa.PublicKey
-	if err := pubKey.FromString(p.IdentityPublicKey); err != nil {
-		return fmt.Errorf("Voting Peer: Invalid IdentityPublicKey: %v", err)
-	}
-	if err := pubKey.FromString(p.LinkPublicKey); err != nil {
-		return fmt.Errorf("Voting Peer: Invalid LinkPublicKey: %v", err)
-	}
-	return nil
-}
+// func (p *Peer) validate() error {
+// 	for _, address := range p.Addresses {
+// 		if err := utils.EnsureAddrIPPort(address); err != nil {
+// 			return fmt.Errorf("Voting Peer: Address is invalid: %v", err)
+// 		}
+// 	}
+// 	var pubKey eddsa.PublicKey
+// 	if err := pubKey.FromString(p.IdentityPublicKey); err != nil {
+// 		return fmt.Errorf("Voting Peer: Invalid IdentityPublicKey: %v", err)
+// 	}
+// 	if err := pubKey.FromString(p.LinkPublicKey); err != nil {
+// 		return fmt.Errorf("Voting Peer: Invalid LinkPublicKey: %v", err)
+// 	}
+// 	return nil
+// }
 
 // Voting is a voting directory authority.
 type Voting struct {
+	ChainID            string
+	TrustOptions       light.TrustOptions
+	PrimaryAddress     string
+	WitnessesAddresses []string
+	DatabaseName       string
+	DatabaseDir        string
+	RpcAddress         string
+
+	// TODO: remove peers
 	Peers []*Peer
 }
 
@@ -764,11 +774,19 @@ func AuthorityPeersFromPeers(peers []*Peer) ([]*config.AuthorityPeer, error) {
 }
 
 func (vCfg *Voting) validate() error {
-	for _, peer := range vCfg.Peers {
-		err := peer.validate()
-		if err != nil {
-			return err
-		}
+	// TODO: remove this
+	// for _, peer := range vCfg.Peers {
+	// 	err := peer.validate()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+	parsedAddress := strings.Split(vCfg.RpcAddress, "tcp://")
+	if len(parsedAddress) <= 1 {
+		return fmt.Errorf("config: PKI/Voting: Address is invalid: address should start with tcp://")
+	}
+	if err := utils.EnsureAddrIPPort(parsedAddress[1]); err != nil {
+		return fmt.Errorf("config: PKI/Voting: Address is invalid: %v", err)
 	}
 	return nil
 }

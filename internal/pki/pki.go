@@ -27,20 +27,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashcloak/Meson-server/config"
-	"github.com/hashcloak/Meson-server/internal/constants"
-	"github.com/hashcloak/Meson-server/internal/debug"
-	"github.com/hashcloak/Meson-server/internal/glue"
-	"github.com/hashcloak/Meson-server/internal/pkicache"
-	nClient "github.com/katzenpost/authority/nonvoting/client"
-	vClient "github.com/katzenpost/authority/voting/client"
+	vClient "github.com/hashcloak/Meson-client/minclient"
 	"github.com/katzenpost/core/crypto/ecdh"
-	"github.com/katzenpost/core/crypto/eddsa"
+	// "github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/epochtime"
 	cpki "github.com/katzenpost/core/pki"
 	sConstants "github.com/katzenpost/core/sphinx/constants"
 	"github.com/katzenpost/core/wire"
 	"github.com/katzenpost/core/worker"
+	// "github.com/hashcloak/Meson-server/config"
+	"github.com/hashcloak/Meson-server/internal/constants"
+	"github.com/hashcloak/Meson-server/internal/debug"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/pkicache"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/op/go-logging.v1"
 )
@@ -692,29 +691,20 @@ func New(glue glue.Glue) (glue.PKI, error) {
 	}
 
 	if glue.Config().PKI.Nonvoting != nil {
-		authPk := new(eddsa.PublicKey)
-		if err = authPk.FromString(glue.Config().PKI.Nonvoting.PublicKey); err != nil {
-			return nil, fmt.Errorf("BUG: pki: Failed to deserialize validated public key: %v", err)
-		}
-		pkiCfg := &nClient.Config{
-			LogBackend: glue.LogBackend(),
-			Address:    glue.Config().PKI.Nonvoting.Address,
-			PublicKey:  authPk,
-		}
-		p.impl, err = nClient.New(pkiCfg)
-		if err != nil {
-			return nil, err
-		}
+		return nil, fmt.Errorf("non-voting client was not supported in meson")
 	} else {
-		authorities, err := config.AuthorityPeersFromPeers(glue.Config().PKI.Voting.Peers)
-		if err != nil {
-			return nil, err
+		votingCfg := glue.Config().PKI.Voting
+		pkiCfg := &vClient.PKIClientConfig{
+			LogBackend:         glue.LogBackend(),
+			ChainID:            votingCfg.ChainID,
+			TrustOptions:       votingCfg.TrustOptions,
+			PrimaryAddress:     votingCfg.RpcAddress,
+			WitnessesAddresses: votingCfg.WitnessesAddresses,
+			DatabaseName:       votingCfg.DatabaseName,
+			DatabaseDir:        votingCfg.DatabaseDir,
+			RpcAddress:         votingCfg.RpcAddress,
 		}
-		pkiCfg := &vClient.Config{
-			LogBackend:  glue.LogBackend(),
-			Authorities: authorities,
-		}
-		p.impl, err = vClient.New(pkiCfg)
+		p.impl, err = vClient.NewPKIClient(pkiCfg)
 		if err != nil {
 			return nil, err
 		}
