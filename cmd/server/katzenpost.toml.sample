@@ -7,14 +7,15 @@
 [Server]
 
   # Identifier is the human readable identifier for the node (eg: FQDN).
-  Identifier = "example.com"
+  Identifier = "sc0vu.provider"
 
   # Addresses are the IP address/port combinations that the server will bind
   # to for incoming connections.
-  Addresses = [ "192.0.2.1:29483", "[2001:DB8::1]:29483" ]
+  Addresses = [ "127.0.0.1:29483", "[::1]:29483" ]
 
   # DataDir is the absolute path to the server's state files.
-  DataDir = "/var/lib/katzenpost"
+  # DataDir = "/var/lib/katzenpost"
+  DataDir = "/tmp/meson_server/data"
 
   # IsProvider specifies if the server is a provider (vs a mix).
   IsProvider = true
@@ -26,14 +27,27 @@
 [PKI]
 
   # Nonvoting is a simple non-voting PKI for test deployments.
-  [PKI.Nonvoting]
+  # [PKI.Nonvoting]
 
     # Address is the IP address/port combination of the directory authority.
-    Address = "192.0.2.2:2323"
+    # Address = "192.0.2.2:2323"
 
     # PublicKey is the directory authority's public key in Base64 or Base16 format.
-    PublicKey = "kAiVchOBwHVtKJVFJLsdCQ9UyN2SlfhLHYqT8ePBetg="
+    # PublicKey = "kAiVchOBwHVtKJVFJLsdCQ9UyN2SlfhLHYqT8ePBetg="
     # PublicKey = "900895721381C0756D28954524BB1D090F54C8DD9295F84B1D8A93F1E3C17AD8"
+
+  [PKI.Voting]
+    ChainID = "katzenmint-chain-71DRoz"
+    PrimaryAddress = "tcp://127.0.0.1:21483"
+    WitnessesAddresses = [ "127.0.0.1:21483" ]
+    DatabaseName = "test_meson_server_pkiclient_db"
+    DatabaseDir = "/tmp/meson_server/server_data"
+    RPCAddress = "tcp://127.0.0.1:21483"
+
+    [PKI.Voting.TrustOptions]
+      Period = 36000
+      Height = 2500
+      Hash = [ 126, 77, 203, 168, 79, 165, 218, 7, 11, 109, 38, 99, 221, 195, 165, 34, 129, 134, 128, 38, 30, 143, 73, 219, 60, 73, 97, 185, 91, 5, 192, 196 ]
 
 #
 # The Logging section controls the logging.
