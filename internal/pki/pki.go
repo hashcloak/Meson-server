@@ -698,11 +698,11 @@ func New(glue glue.Glue) (glue.PKI, error) {
 			LogBackend:         glue.LogBackend(),
 			ChainID:            votingCfg.ChainID,
 			TrustOptions:       votingCfg.TrustOptions,
-			PrimaryAddress:     votingCfg.RpcAddress,
+			PrimaryAddress:     votingCfg.RPCAddress,
 			WitnessesAddresses: votingCfg.WitnessesAddresses,
 			DatabaseName:       votingCfg.DatabaseName,
 			DatabaseDir:        votingCfg.DatabaseDir,
-			RpcAddress:         votingCfg.RpcAddress,
+			RPCAddress:         votingCfg.RPCAddress,
 		}
 		p.impl, err = vClient.NewPKIClient(pkiCfg)
 		if err != nil {

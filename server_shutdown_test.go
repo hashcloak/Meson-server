@@ -101,9 +101,9 @@ func TestServerStartShutdown(t *testing.T) {
 				TrustOptions:       trustOptions,
 				PrimaryAddress:     rpcAddress,
 				WitnessesAddresses: []string{rpcAddress},
-				DatabaseName:       "test_menson_server_pkiclient_db",
+				DatabaseName:       "test_meson_server_pkiclient_db",
 				DatabaseDir:        testDir,
-				RpcAddress:         rpcAddress,
+				RPCAddress:         rpcAddress,
 			},
 		},
 		Management: &config.Management{

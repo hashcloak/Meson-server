@@ -743,10 +743,7 @@ type Voting struct {
 	WitnessesAddresses []string
 	DatabaseName       string
 	DatabaseDir        string
-	RpcAddress         string
-
-	// TODO: remove peers
-	Peers []*Peer
+	RPCAddress         string
 }
 
 // AuthorityPeersFromPeers loads keys and instances config.AuthorityPeer for each Peer
@@ -774,14 +771,7 @@ func AuthorityPeersFromPeers(peers []*Peer) ([]*config.AuthorityPeer, error) {
 }
 
 func (vCfg *Voting) validate() error {
-	// TODO: remove this
-	// for _, peer := range vCfg.Peers {
-	// 	err := peer.validate()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	parsedAddress := strings.Split(vCfg.RpcAddress, "tcp://")
+	parsedAddress := strings.Split(vCfg.RPCAddress, "tcp://")
 	if len(parsedAddress) <= 1 {
 		return fmt.Errorf("config: PKI/Voting: Address is invalid: address should start with tcp://")
 	}

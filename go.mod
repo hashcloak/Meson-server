@@ -9,7 +9,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/fxamacker/cbor/v2 v2.2.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
-	github.com/hashcloak/Meson-client v0.0.0-20210606150929-03a75f2261c6
+	github.com/hashcloak/Meson-client v0.0.0-20210614082152-abbb6f5cdd8f
 	github.com/hashcloak/katzenmint-pki v0.0.0-20210527155414-2f5b5be6ee03
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/katzenpost/authority v0.0.14
