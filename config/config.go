@@ -771,6 +771,18 @@ func AuthorityPeersFromPeers(peers []*Peer) ([]*config.AuthorityPeer, error) {
 }
 
 func (vCfg *Voting) validate() error {
+	if err := vCfg.TrustOptions.ValidateBasic(); err != nil {
+		return fmt.Errorf("config: %+v", err)
+	}
+	if vCfg.PrimaryAddress == "" {
+		return fmt.Errorf("config: primary address is missing")
+	}
+	if vCfg.DatabaseName == "" || vCfg.DatabaseDir == "" {
+		return fmt.Errorf("config: database name or directory is missing")
+	}
+	if vCfg.RPCAddress == "" {
+		return fmt.Errorf("config: RPC address is missing")
+	}
 	parsedAddress := strings.Split(vCfg.RPCAddress, "tcp://")
 	if len(parsedAddress) <= 1 {
 		return fmt.Errorf("config: PKI/Voting: Address is invalid: address should start with tcp://")
