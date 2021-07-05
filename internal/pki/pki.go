@@ -27,19 +27,18 @@ import (
 	"sync"
 	"time"
 
-	vClient "github.com/hashcloak/Meson-client/minclient"
+	kpki "github.com/hashcloak/Meson-client/pkiclient"
+	pkitime "github.com/hashcloak/Meson-client/pkiclient/epochtime"
+	"github.com/hashcloak/Meson-server/internal/constants"
+	"github.com/hashcloak/Meson-server/internal/debug"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/pkicache"
 	"github.com/katzenpost/core/crypto/ecdh"
-	// "github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/epochtime"
 	cpki "github.com/katzenpost/core/pki"
 	sConstants "github.com/katzenpost/core/sphinx/constants"
 	"github.com/katzenpost/core/wire"
 	"github.com/katzenpost/core/worker"
-	// "github.com/hashcloak/Meson-server/config"
-	"github.com/hashcloak/Meson-server/internal/constants"
-	"github.com/hashcloak/Meson-server/internal/debug"
-	"github.com/hashcloak/Meson-server/internal/glue"
-	"github.com/hashcloak/Meson-server/internal/pkicache"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/op/go-logging.v1"
 )
@@ -59,7 +58,7 @@ type pki struct {
 	glue glue.Glue
 	log  *logging.Logger
 
-	impl               cpki.Client
+	impl               kpki.Client
 	descAddrMap        map[cpki.Transport][]string
 	docs               map[uint64]*pkicache.Entry
 	rawDocs            map[uint64][]byte
@@ -184,7 +183,7 @@ func (p *pki) worker() {
 				continue
 			}
 
-			d, rawDoc, err := p.impl.Get(pkiCtx, epoch)
+			d, rawDoc, err := p.impl.GetDoc(pkiCtx, epoch)
 			if isCanceled() {
 				// Canceled mid-fetch.
 				return
@@ -655,6 +654,10 @@ func (p *pki) GetRawConsensus(epoch uint64) ([]byte, error) {
 	return val, nil
 }
 
+func (p *pki) Now() (epoch uint64, ellapsed time.Duration, till time.Duration, err error) {
+	return pkitime.Now(p.impl)
+}
+
 // New reuturns a new pki.
 func New(glue glue.Glue) (glue.PKI, error) {
 	p := &pki{
@@ -694,7 +697,7 @@ func New(glue glue.Glue) (glue.PKI, error) {
 		return nil, fmt.Errorf("non-voting client was not supported in meson")
 	} else {
 		votingCfg := glue.Config().PKI.Voting
-		pkiCfg := &vClient.PKIClientConfig{
+		pkiCfg := &kpki.PKIClientConfig{
 			LogBackend:         glue.LogBackend(),
 			ChainID:            votingCfg.ChainID,
 			TrustOptions:       votingCfg.TrustOptions,
@@ -704,7 +707,7 @@ func New(glue glue.Glue) (glue.PKI, error) {
 			DatabaseDir:        votingCfg.DatabaseDir,
 			RPCAddress:         votingCfg.RPCAddress,
 		}
-		p.impl, err = vClient.NewPKIClient(pkiCfg)
+		p.impl, err = kpki.NewPKIClient(pkiCfg)
 		if err != nil {
 			return nil, err
 		}

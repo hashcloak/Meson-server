@@ -19,6 +19,8 @@
 package glue
 
 import (
+	"time"
+
 	"github.com/hashcloak/Meson-server/config"
 	"github.com/hashcloak/Meson-server/internal/mixkey"
 	"github.com/hashcloak/Meson-server/internal/packet"
@@ -67,6 +69,7 @@ type PKI interface {
 	OutgoingDestinations() map[[constants.NodeIDLength]byte]*pki.MixDescriptor
 	AuthenticateConnection(*wire.PeerCredentials, bool) (*pki.MixDescriptor, bool, bool)
 	GetRawConsensus(uint64) ([]byte, error)
+	Now() (epoch uint64, ellapsed time.Duration, till time.Duration, err error)
 }
 
 type Provider interface {
