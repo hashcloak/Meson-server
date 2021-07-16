@@ -183,6 +183,12 @@ func (s *Server) halt() {
 		s.scheduler = nil
 	}
 
+	// Flush and close the mix keys.
+	if s.mixKeys != nil {
+		s.mixKeys.Halt()
+		s.mixKeys = nil
+	}
+
 	// Stop the PKI interface.
 	if s.pki != nil {
 		s.pki.Halt()
@@ -191,12 +197,6 @@ func (s *Server) halt() {
 		// PKI calls into the connector/decoy.
 		s.connector = nil
 		s.decoy = nil
-	}
-
-	// Flush and close the mix keys.
-	if s.mixKeys != nil {
-		s.mixKeys.Halt()
-		s.mixKeys = nil
 	}
 
 	// Clean up the top level components.
@@ -270,6 +270,12 @@ func New(cfg *config.Config) (*Server, error) {
 		return nil, ErrGenerateOnly
 	}
 
+	// Initialize the PKI interface. This should happen first to resolve epochtime.
+	if s.pki, err = pki.New(goo); err != nil {
+		s.log.Errorf("Failed to initialize PKI client: %v", err)
+		return nil, err
+	}
+
 	// Load and or generate mix keys.
 	if s.mixKeys, err = newMixKeys(goo); err != nil {
 		s.log.Errorf("Failed to initialize mix keys: %v", err)
@@ -326,12 +332,6 @@ func New(cfg *config.Config) (*Server, error) {
 			s.fatalErrCh <- fmt.Errorf("user requested shutdown via mgmt interface")
 			return nil
 		})
-	}
-
-	// Initialize the PKI interface.
-	if s.pki, err = pki.New(goo); err != nil {
-		s.log.Errorf("Failed to initialize PKI client: %v", err)
-		return nil, err
 	}
 
 	// Initialize the provider backend.

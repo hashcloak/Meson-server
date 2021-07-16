@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"git.schwanenlied.me/yawning/avl.git"
+	"github.com/hashcloak/Meson-client/pkiclient/epochtime"
 	internalConstants "github.com/hashcloak/Meson-server/internal/constants"
 	"github.com/hashcloak/Meson-server/internal/glue"
 	"github.com/hashcloak/Meson-server/internal/packet"
@@ -36,7 +37,6 @@ import (
 	"github.com/hashcloak/Meson-server/internal/provider/kaetzchen"
 	"github.com/katzenpost/core/constants"
 	"github.com/katzenpost/core/crypto/rand"
-	"github.com/katzenpost/core/epochtime"
 	"github.com/katzenpost/core/monotime"
 	"github.com/katzenpost/core/pki"
 	"github.com/katzenpost/core/sphinx"
@@ -182,7 +182,12 @@ func (d *decoy) worker() {
 				continue
 			}
 
-			now, _, _ := epochtime.Now()
+			now, _, _, err := d.glue.PKI().Now()
+			if err != nil {
+				d.log.Debugf("Error fetching PKI epoch, ignoring: %v", newEnt.Epoch())
+				ignoredPKIDocs.Inc()
+				continue
+			}
 			if entEpoch := newEnt.Epoch(); entEpoch != now {
 				d.log.Debugf("Received PKI document for non-current epoch, ignoring: %v", entEpoch)
 				ignoredPKIDocs.Inc()
@@ -200,8 +205,8 @@ func (d *decoy) worker() {
 			timerFired = true
 		}
 
-		now, _, _ := epochtime.Now()
-		if docCache == nil || docCache.Epoch() != now {
+		now, _, _, err := d.glue.PKI().Now()
+		if err != nil || docCache == nil || docCache.Epoch() != now {
 			d.log.Debugf("Suspending operation till the next PKI document.")
 			wakeInterval = time.Duration(maxDuration)
 		} else {
@@ -297,7 +302,7 @@ func (d *decoy) sendLoopPacket(doc *pki.Document, recipient []byte, src, dst *pk
 			return
 		}
 
-		if deltaT := then.Sub(now); deltaT < epochtime.Period*2 {
+		if deltaT := then.Sub(now); deltaT < epochtime.TestPeriod*2 {
 			var zeroBytes [constants.UserForwardPayloadLength]byte
 			payload := make([]byte, 2, 2+sphinx.SURBLength+constants.UserForwardPayloadLength)
 			payload[0] = 1 // Packet has a SURB.
@@ -349,7 +354,7 @@ func (d *decoy) sendDiscardPacket(doc *pki.Document, recipient []byte, src, dst 
 			return
 		}
 
-		if then.Sub(now) < epochtime.Period*2 {
+		if then.Sub(now) < epochtime.TestPeriod*2 {
 			pkt, err := sphinx.NewPacket(rand.Reader, fwdPath, payload[:])
 			if err != nil {
 				d.log.Debugf("Failed to generate Sphinx packet: %v", err)

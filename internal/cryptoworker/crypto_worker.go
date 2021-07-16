@@ -22,11 +22,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashcloak/Meson-client/pkiclient/epochtime"
 	"github.com/hashcloak/Meson-server/internal/constants"
 	"github.com/hashcloak/Meson-server/internal/glue"
 	"github.com/hashcloak/Meson-server/internal/mixkey"
 	"github.com/hashcloak/Meson-server/internal/packet"
-	"github.com/katzenpost/core/epochtime"
 	"github.com/katzenpost/core/monotime"
 	"github.com/katzenpost/core/sphinx"
 	"github.com/katzenpost/core/worker"
@@ -84,7 +84,10 @@ func (w *Worker) doUnwrap(pkt *packet.Packet) error {
 
 	// Figure out the candidate mix private keys for this packet.
 	keys := make([]*mixkey.MixKey, 0, 2)
-	epoch, elapsed, till := epochtime.Now()
+	epoch, elapsed, till, err := w.glue.PKI().Now()
+	if err != nil {
+		return err
+	}
 	k, ok := w.mixKeys[epoch]
 	if !ok || k == nil {
 		// There always will be a key for the current epoch, since
@@ -233,7 +236,7 @@ func (w *Worker) worker() {
 
 			// Check and adjust the delay for queue dwell time.
 			pkt.Delay = time.Duration(pkt.NodeDelay.Delay) * time.Millisecond
-			if pkt.Delay > constants.NumMixKeys*epochtime.Period {
+			if pkt.Delay > constants.NumMixKeys*epochtime.TestPeriod {
 				w.log.Debugf("Dropping packet: %v (Delay %v is past what is possible)", pkt.ID, pkt.Delay)
 				packetsDropped.Inc()
 				pkt.Dispose()
@@ -332,8 +335,13 @@ func (w *Worker) worker() {
 }
 
 func (w *Worker) derefKeys() {
+	epoch, _, _, err := w.glue.PKI().Now()
+	if err != nil {
+		w.log.Debugf("Error fetching PKI epoch")
+		return
+	}
 	for _, v := range w.mixKeys {
-		v.Deref()
+		v.Deref(epoch)
 	}
 }
 

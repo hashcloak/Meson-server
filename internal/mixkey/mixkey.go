@@ -31,7 +31,6 @@ import (
 	"git.schwanenlied.me/yawning/bloom.git"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/rand"
-	"github.com/katzenpost/core/epochtime"
 	"github.com/katzenpost/core/worker"
 	bolt "go.etcd.io/bbolt"
 )
@@ -238,10 +237,10 @@ func (k *MixKey) doFlush(forceFlush bool) {
 
 // Deref reduces the refcount by one, and closes the key if the refcount hits
 // 0.
-func (k *MixKey) Deref() {
+func (k *MixKey) Deref(epoch uint64) {
 	i := atomic.AddInt32(&k.refCount, -1)
 	if i == 0 {
-		k.forceClose()
+		k.forceClose(epoch)
 	} else if i < 0 {
 		panic("BUG: mixkey: Refcount is negative")
 	}
@@ -255,7 +254,7 @@ func (k *MixKey) Ref() {
 	}
 }
 
-func (k *MixKey) forceClose() {
+func (k *MixKey) forceClose(epoch uint64) {
 	if k.db != nil {
 		f := k.db.Path() // Cache so we can unlink after Close().
 
@@ -269,7 +268,6 @@ func (k *MixKey) forceClose() {
 
 		// Delete the database if the key is expired, and the owner requested
 		// full cleanup.
-		epoch, _, _ := epochtime.Now()
 		if k.unlinkIfExpired && k.epoch < epoch-1 {
 			// People will probably complain that this doesn't attempt
 			// "secure" deletion, but that's fundamentally a lost cause

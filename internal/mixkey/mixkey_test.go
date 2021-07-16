@@ -61,7 +61,7 @@ func doTestCreate(t *testing.T) {
 	k, err := New(tmpDir, testEpoch)
 	require.NoError(err, "New()")
 	testKeyPath = k.db.Path()
-	defer k.Deref()
+	defer k.Deref(testEpoch)
 
 	t.Logf("db: %v", testKeyPath)
 	t.Logf("Public Key: %v", hex.EncodeToString(k.PublicKey().Bytes()))
@@ -89,7 +89,7 @@ func doTestLoad(t *testing.T) {
 	k, err := New(tmpDir, testEpoch)
 	require.NoError(err, "New() load")
 	k.SetUnlinkIfExpired(true)
-	defer k.Deref()
+	defer k.Deref(testEpoch + 2)
 
 	assert.Equal(&testKey, k.PrivateKey(), "Serialized private key")
 	assert.Equal(testKey.PublicKey(), k.PublicKey(), "Serialized public key")
@@ -133,7 +133,7 @@ func doBenchIsReplayMiss(b *testing.B) {
 		b.Fatalf("Failed to open key: %v", err)
 	}
 	k.SetUnlinkIfExpired(true)
-	defer k.Deref()
+	defer k.Deref(testEpoch)
 
 	count := 0
 	b.ResetTimer()
@@ -160,7 +160,7 @@ func doBenchIsReplayHit(b *testing.B) {
 		b.Fatalf("Failed to open key: %v", err)
 	}
 	k.SetUnlinkIfExpired(true)
-	defer k.Deref()
+	defer k.Deref(testEpoch)
 
 	var tag [TagLength]byte
 	_, _ = rand.Read(tag[:])

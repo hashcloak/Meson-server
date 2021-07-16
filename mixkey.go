@@ -26,7 +26,6 @@ import (
 	"github.com/hashcloak/Meson-server/internal/glue"
 	"github.com/hashcloak/Meson-server/internal/mixkey"
 	"github.com/katzenpost/core/crypto/ecdh"
-	"github.com/katzenpost/core/epochtime"
 	"gopkg.in/op/go-logging.v1"
 )
 
@@ -45,7 +44,10 @@ func (m *mixKeys) init() error {
 	// TODO: In theory this should also try to load the previous epoch's key
 	// if the current time is in the clock skew grace period.  But it may not
 	// matter much in practice.
-	epoch, _, _ := epochtime.Now()
+	epoch, _, _, err := m.glue.PKI().Now()
+	if err != nil {
+		return err
+	}
 	if _, err := m.Generate(epoch); err != nil {
 		return err
 	}
@@ -88,7 +90,7 @@ func (m *mixKeys) Generate(baseEpoch uint64) (bool, error) {
 			// Clean up whatever keys that may have succeeded.
 			for ee := baseEpoch; ee < baseEpoch+constants.NumMixKeys; ee++ {
 				if kk, ok := m.keys[ee]; ok {
-					kk.Deref()
+					kk.Deref(ee)
 					delete(m.keys, ee)
 				}
 			}
@@ -102,7 +104,11 @@ func (m *mixKeys) Generate(baseEpoch uint64) (bool, error) {
 }
 
 func (m *mixKeys) Prune() bool {
-	epoch, _, _ := epochtime.Now()
+	epoch, _, _, err := m.glue.PKI().Now()
+	if err != nil {
+		m.log.Debugf("Error fetching PKI epoch")
+		return false
+	}
 	didPrune := false
 
 	m.Lock()
@@ -111,7 +117,7 @@ func (m *mixKeys) Prune() bool {
 	for idx, v := range m.keys {
 		if idx < epoch-1 {
 			m.log.Debugf("Purging expired key for epoch: %v", idx)
-			v.Deref()
+			v.Deref(epoch)
 			delete(m.keys, idx)
 			didPrune = true
 		}
@@ -134,10 +140,16 @@ func (m *mixKeys) Shadow(dst map[uint64]*mixkey.MixKey) {
 	m.Lock()
 	defer m.Unlock()
 
+	epoch, _, _, err := m.glue.PKI().Now()
+	if err != nil {
+		m.log.Debugf("Error fetching PKI epoch")
+		return
+	}
+
 	// Purge the keys no longer listed from dst.
 	for k, v := range dst {
 		if _, ok := m.keys[k]; !ok {
-			v.Deref()
+			v.Deref(epoch)
 			delete(dst, k)
 		}
 	}
@@ -155,8 +167,13 @@ func (m *mixKeys) Halt() {
 	m.Lock()
 	defer m.Unlock()
 
+	epoch, _, _, err := m.glue.PKI().Now()
+	if err != nil {
+		m.log.Debugf("Error fetching PKI epoch")
+		return
+	}
 	for k, v := range m.keys {
-		v.Deref()
+		v.Deref(epoch)
 		delete(m.keys, k)
 	}
 }

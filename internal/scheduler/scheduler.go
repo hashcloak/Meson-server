@@ -21,11 +21,11 @@ import (
 	"math"
 	"time"
 
+	"github.com/hashcloak/Meson-client/pkiclient/epochtime"
 	"github.com/hashcloak/Meson-server/internal/constants"
 	"github.com/hashcloak/Meson-server/internal/debug"
 	"github.com/hashcloak/Meson-server/internal/glue"
 	"github.com/hashcloak/Meson-server/internal/packet"
-	"github.com/katzenpost/core/epochtime"
 	"github.com/katzenpost/core/monotime"
 	"github.com/katzenpost/core/worker"
 	"github.com/prometheus/client_golang/prometheus"
@@ -101,7 +101,7 @@ func (sch *scheduler) OnPacket(pkt *packet.Packet) {
 
 func (sch *scheduler) worker() {
 
-	var absoluteMaxDelay = epochtime.Period * constants.NumMixKeys
+	var absoluteMaxDelay = epochtime.TestPeriod * constants.NumMixKeys
 
 	timerSlack := time.Duration(sch.glue.Config().Debug.SchedulerSlack) * time.Millisecond
 	timer := time.NewTimer(math.MaxInt64)

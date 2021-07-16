@@ -10,7 +10,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.2.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/hashcloak/Meson-client v0.0.0-20210705134811-34e45066773a
-	github.com/hashcloak/katzenmint-pki v0.0.0-20210702164452-aec29c963f7c
+	github.com/hashcloak/katzenmint-pki v0.0.0-20210712115149-6ead487bdb8b
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/katzenpost/authority v0.0.14
 	github.com/katzenpost/core v0.0.12

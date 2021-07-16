@@ -7,7 +7,7 @@
 [Server]
 
   # Identifier is the human readable identifier for the node (eg: FQDN).
-  Identifier = "sc0vu.provider"
+  Identifier = "greatect.provider"
 
   # Addresses are the IP address/port combinations that the server will bind
   # to for incoming connections.
@@ -45,9 +45,9 @@
     RPCAddress = "tcp://127.0.0.1:21483"
 
     [PKI.Voting.TrustOptions]
-      Period = 36000
-      Height = 2500
-      Hash = [ 126, 77, 203, 168, 79, 165, 218, 7, 11, 109, 38, 99, 221, 195, 165, 34, 129, 134, 128, 38, 30, 143, 73, 219, 60, 73, 97, 185, 91, 5, 192, 196 ]
+      Period = 36000000000000
+      Height = 1
+      Hash = [ 168, 130, 77, 22, 134, 51, 143, 62, 192, 81, 155, 65, 197, 93, 101, 27, 130, 49, 73, 189, 22, 82, 165, 106, 213, 15, 35, 134, 136, 133, 246, 18]
 
 #
 # The Logging section controls the logging.
@@ -92,12 +92,12 @@
     Disable = false
 
   # Here's an example external Kaetzchen service plugin config
-  [[Provider.PluginKaetzchen]]
-    Capability = "echo"
-    Endpoint = "+echo"
-    Disable = false
-    Command = "/var/lib/katzenpost/plugins/echo"
-    MaxConcurrency = 3
+  #[[Provider.PluginKaetzchen]]
+  #  Capability = "echo"
+  #  Endpoint = "+echo"
+  #  Disable = false
+  #  Command = "/var/lib/katzenpost/plugins/echo"
+  #  MaxConcurrency = 3
 
   # UserDB is the user database configuration.  If left empty the simple
   # BoltDB backed user database will be used with the default database.
