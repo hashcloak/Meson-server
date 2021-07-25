@@ -2,6 +2,7 @@
 
 mkdir -p /tmp/meson_server
 read -p "path to katzenmint-pki parent folder? " path
+read -p "absolute path/filename to meson server config file?" conf
 file="$path/katzenmint-pki/docker/conf/node1/data/blockstore.db/000001.log"
 hashhex=$(strings $file | grep "CBH:" | head -1 | cut -c5-)
 output=""
@@ -17,4 +18,4 @@ do
 done
 
 TITLE="Hash = "
-sed -i "s/$TITLE.*/$TITLE[$output]/g" ./katzenpost.toml.sample
+perl -i -pe"s/$TITLE.*/$TITLE[$output]/g" $conf
