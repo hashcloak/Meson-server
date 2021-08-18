@@ -20,3 +20,7 @@ test:
 .PHONY: build
 build:
 	go build -tags=$(GOTAGS) -o meson-server cmd/server/*.go
+
+.PHONY: build-docker
+build-docker:
+	docker build --no-cache -t meson/server .
