@@ -19,6 +19,14 @@
 package glue
 
 import (
+	"time"
+
+	"github.com/hashcloak/Meson-server/config"
+	"github.com/hashcloak/Meson-server/internal/mixkey"
+	"github.com/hashcloak/Meson-server/internal/packet"
+	"github.com/hashcloak/Meson-server/internal/pkicache"
+	"github.com/hashcloak/Meson-server/spool"
+	"github.com/hashcloak/Meson-server/userdb"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/log"
@@ -26,12 +34,6 @@ import (
 	"github.com/katzenpost/core/sphinx/constants"
 	"github.com/katzenpost/core/thwack"
 	"github.com/katzenpost/core/wire"
-	"github.com/katzenpost/server/config"
-	"github.com/katzenpost/server/internal/mixkey"
-	"github.com/katzenpost/server/internal/packet"
-	"github.com/katzenpost/server/internal/pkicache"
-	"github.com/katzenpost/server/spool"
-	"github.com/katzenpost/server/userdb"
 )
 
 // Glue is the structure that binds the internal components together.
@@ -67,6 +69,7 @@ type PKI interface {
 	OutgoingDestinations() map[[constants.NodeIDLength]byte]*pki.MixDescriptor
 	AuthenticateConnection(*wire.PeerCredentials, bool) (*pki.MixDescriptor, bool, bool)
 	GetRawConsensus(uint64) ([]byte, error)
+	Now() (epoch uint64, ellapsed time.Duration, till time.Duration, err error)
 }
 
 type Provider interface {

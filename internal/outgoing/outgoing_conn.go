@@ -26,13 +26,13 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/hashcloak/Meson-server/internal/constants"
+	"github.com/hashcloak/Meson-server/internal/packet"
 	"github.com/katzenpost/core/crypto/rand"
 	"github.com/katzenpost/core/monotime"
 	cpki "github.com/katzenpost/core/pki"
 	"github.com/katzenpost/core/wire"
 	"github.com/katzenpost/core/wire/commands"
-	"github.com/katzenpost/server/internal/constants"
-	"github.com/katzenpost/server/internal/packet"
 	"gopkg.in/op/go-logging.v1"
 )
 
@@ -275,13 +275,13 @@ func (c *outgoingConn) onConnEstablished(conn net.Conn, closeCh <-chan struct{})
 
 	// Bind the session to the conn, handshake, authenticate.
 	timeoutMs := time.Duration(c.co.glue.Config().Debug.HandshakeTimeout) * time.Millisecond
-	conn.SetDeadline(time.Now().Add(timeoutMs))
+	_ = conn.SetDeadline(time.Now().Add(timeoutMs))
 	if err = w.Initialize(conn); err != nil {
 		c.log.Errorf("Handshake failed: %v", err)
 		return
 	}
 	c.log.Debugf("Handshake completed.")
-	conn.SetDeadline(time.Time{})
+	_ = conn.SetDeadline(time.Time{})
 	c.retryDelay = 0 // Reset the retry delay on successful handshakes.
 
 	// Since outgoing connections have no reverse traffic, read from the

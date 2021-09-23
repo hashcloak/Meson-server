@@ -27,20 +27,17 @@ import (
 	"sync"
 	"time"
 
-	nClient "github.com/katzenpost/authority/nonvoting/client"
-	vClient "github.com/katzenpost/authority/voting/client"
+	kpki "github.com/hashcloak/Meson-client/pkiclient"
+	"github.com/hashcloak/Meson-client/pkiclient/epochtime"
+	"github.com/hashcloak/Meson-server/internal/constants"
+	"github.com/hashcloak/Meson-server/internal/debug"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/pkicache"
 	"github.com/katzenpost/core/crypto/ecdh"
-	"github.com/katzenpost/core/crypto/eddsa"
-	"github.com/katzenpost/core/epochtime"
 	cpki "github.com/katzenpost/core/pki"
 	sConstants "github.com/katzenpost/core/sphinx/constants"
 	"github.com/katzenpost/core/wire"
 	"github.com/katzenpost/core/worker"
-	"github.com/katzenpost/server/config"
-	"github.com/katzenpost/server/internal/constants"
-	"github.com/katzenpost/server/internal/debug"
-	"github.com/katzenpost/server/internal/glue"
-	"github.com/katzenpost/server/internal/pkicache"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/op/go-logging.v1"
 )
@@ -49,8 +46,8 @@ var (
 	errNotCached         = errors.New("pki: requested epoch document not in cache")
 	recheckInterval      = 1 * time.Minute
 	WarpedEpoch          = "false"
-	nextFetchTill        = epochtime.Period/8
-	pkiEarlyConnectSlack = epochtime.Period / 6
+	nextFetchTill        = epochtime.TestPeriod / 8
+	pkiEarlyConnectSlack = epochtime.TestPeriod / 6
 )
 
 type pki struct {
@@ -60,7 +57,7 @@ type pki struct {
 	glue glue.Glue
 	log  *logging.Logger
 
-	impl               cpki.Client
+	impl               kpki.Client
 	descAddrMap        map[cpki.Transport][]string
 	docs               map[uint64]*pkicache.Entry
 	rawDocs            map[uint64][]byte
@@ -185,7 +182,7 @@ func (p *pki) worker() {
 				continue
 			}
 
-			d, rawDoc, err := p.impl.Get(pkiCtx, epoch)
+			d, rawDoc, err := p.impl.GetDoc(pkiCtx, epoch)
 			if isCanceled() {
 				// Canceled mid-fetch.
 				return
@@ -245,7 +242,7 @@ func (p *pki) worker() {
 		// Internal component depend on network wide paramemters, and or the
 		// list of nodes.  Update if there is a new document for the current
 		// epoch.
-		if now, _, _ := epochtime.Now(); now != lastUpdateEpoch {
+		if now, _, _, err := p.Now(); err == nil && now != lastUpdateEpoch {
 			if ent := p.entryForEpoch(now); ent != nil {
 				if newMuMaxDelay := ent.MuMaxDelay(); newMuMaxDelay != lastMuMaxDelay {
 					p.log.Debugf("Updating scheduler MuMaxDelay for epoch %v: %v", now, newMuMaxDelay)
@@ -309,7 +306,10 @@ func (p *pki) pruneFailures() {
 	p.Lock()
 	defer p.Unlock()
 
-	now, _, _ := epochtime.Now()
+	now, _, _, err := p.Now()
+	if err != nil {
+		p.log.Debugf("Error fetching PKI epoch: %v", err)
+	}
 
 	for epoch := range p.failedFetches {
 		// Be more aggressive about pruning failures than pruning documents,
@@ -321,7 +321,10 @@ func (p *pki) pruneFailures() {
 }
 
 func (p *pki) pruneDocuments() {
-	now, _, _ := epochtime.Now()
+	now, _, _, err := p.Now()
+	if err != nil {
+		p.log.Debugf("Error fetching PKI epoch: %v", err)
+	}
 
 	p.Lock()
 	defer p.Unlock()
@@ -339,9 +342,13 @@ func (p *pki) pruneDocuments() {
 }
 
 func (p *pki) publishDescriptorIfNeeded(pkiCtx context.Context) error {
-	publishDeadline := epochtime.Period / 2
+	publishDeadline := epochtime.TestPeriod / 2
 
-	epoch, _, till := epochtime.Now()
+	epoch, _, till, err := p.Now()
+	if err != nil {
+		p.log.Debugf("Error fetching PKI epoch: %v", err)
+		return err
+	}
 	doPublishEpoch := uint64(0)
 	switch p.lastPublishedEpoch {
 	case 0:
@@ -438,7 +445,7 @@ func (p *pki) publishDescriptorIfNeeded(pkiCtx context.Context) error {
 	}
 
 	// Post the descriptor to all the authorities.
-	err := p.impl.Post(pkiCtx, doPublishEpoch, p.glue.IdentityKey(), desc)
+	err = p.impl.Post(pkiCtx, doPublishEpoch, p.glue.IdentityKey(), desc)
 	switch err {
 	case nil:
 		p.log.Debugf("Posted descriptor for epoch: %v", doPublishEpoch)
@@ -470,7 +477,11 @@ func (p *pki) entryForEpoch(epoch uint64) *pkicache.Entry {
 func (p *pki) documentsToFetch() []uint64 {
 
 	ret := make([]uint64, 0, constants.NumMixKeys+1)
-	now, _, till := epochtime.Now()
+	now, _, till, err := p.Now()
+	if err != nil {
+		p.log.Debugf("Error fetching PKI epoch: %v", err)
+		return nil
+	}
 	start := now
 	if till < nextFetchTill {
 		start = now + 1
@@ -494,7 +505,7 @@ func (p *pki) documentsForAuthentication() ([]*pkicache.Entry, *pkicache.Entry, 
 	//
 	// Note: The ordering is important and should not be changed without
 	// changes to pki.AuthenticateConnection().
-	now, _, till := epochtime.Now()
+	now, _, till, err := p.Now()
 	epochs := make([]uint64, 0, constants.NumMixKeys+1)
 	start := now
 	if till < pkiEarlyConnectSlack {
@@ -502,8 +513,10 @@ func (p *pki) documentsForAuthentication() ([]*pkicache.Entry, *pkicache.Entry, 
 		// transition.
 		start = now + 1
 	}
-	for epoch := start; epoch > now-constants.NumMixKeys; epoch-- {
-		epochs = append(epochs, epoch)
+	if err == nil {
+		for epoch := start; epoch > now-constants.NumMixKeys; epoch-- {
+			epochs = append(epochs, epoch)
+		}
 	}
 
 	// Return the list of cache entries.
@@ -646,7 +659,10 @@ func (p *pki) GetRawConsensus(epoch uint64) ([]byte, error) {
 	defer p.RUnlock()
 	val, ok := p.rawDocs[epoch]
 	if !ok {
-		now, _, _ := epochtime.Now()
+		now, _, _, err := p.Now()
+		if err != nil {
+			return nil, err
+		}
 		// Return cpki.ErrNoDocument if documents will never exist.
 		if epoch < now-1 {
 			return nil, cpki.ErrNoDocument
@@ -654,6 +670,13 @@ func (p *pki) GetRawConsensus(epoch uint64) ([]byte, error) {
 		return nil, errNotCached
 	}
 	return val, nil
+}
+
+func (p *pki) Now() (epoch uint64, ellapsed time.Duration, till time.Duration, err error) {
+	if p.impl == nil {
+		return 0, 0, 0, fmt.Errorf("PKI client uninitialized.")
+	}
+	return epochtime.Now(p.impl)
 }
 
 // New reuturns a new pki.
@@ -692,29 +715,20 @@ func New(glue glue.Glue) (glue.PKI, error) {
 	}
 
 	if glue.Config().PKI.Nonvoting != nil {
-		authPk := new(eddsa.PublicKey)
-		if err = authPk.FromString(glue.Config().PKI.Nonvoting.PublicKey); err != nil {
-			return nil, fmt.Errorf("BUG: pki: Failed to deserialize validated public key: %v", err)
-		}
-		pkiCfg := &nClient.Config{
-			LogBackend: glue.LogBackend(),
-			Address:    glue.Config().PKI.Nonvoting.Address,
-			PublicKey:  authPk,
-		}
-		p.impl, err = nClient.New(pkiCfg)
-		if err != nil {
-			return nil, err
-		}
+		return nil, fmt.Errorf("non-voting client was not supported in meson")
 	} else {
-		authorities, err := config.AuthorityPeersFromPeers(glue.Config().PKI.Voting.Peers)
-		if err != nil {
-			return nil, err
+		votingCfg := glue.Config().PKI.Voting
+		pkiCfg := &kpki.PKIClientConfig{
+			LogBackend:         glue.LogBackend(),
+			ChainID:            votingCfg.ChainID,
+			TrustOptions:       votingCfg.TrustOptions,
+			PrimaryAddress:     votingCfg.RPCAddress,
+			WitnessesAddresses: votingCfg.WitnessesAddresses,
+			DatabaseName:       votingCfg.DatabaseName,
+			DatabaseDir:        votingCfg.DatabaseDir,
+			RPCAddress:         votingCfg.RPCAddress,
 		}
-		pkiCfg := &vClient.Config{
-			LogBackend:  glue.LogBackend(),
-			Authorities: authorities,
-		}
-		p.impl, err = vClient.New(pkiCfg)
+		p.impl, err = kpki.NewPKIClient(pkiCfg)
 		if err != nil {
 			return nil, err
 		}

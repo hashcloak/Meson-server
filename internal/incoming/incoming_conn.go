@@ -24,6 +24,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	internalConstants "github.com/hashcloak/Meson-server/internal/constants"
+	"github.com/hashcloak/Meson-server/internal/debug"
+	"github.com/hashcloak/Meson-server/internal/packet"
 	"github.com/katzenpost/core/constants"
 	"github.com/katzenpost/core/crypto/rand"
 	"github.com/katzenpost/core/monotime"
@@ -32,9 +35,6 @@ import (
 	"github.com/katzenpost/core/utils"
 	"github.com/katzenpost/core/wire"
 	"github.com/katzenpost/core/wire/commands"
-	internalConstants "github.com/katzenpost/server/internal/constants"
-	"github.com/katzenpost/server/internal/debug"
-	"github.com/katzenpost/server/internal/packet"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/op/go-logging.v1"
 )
@@ -198,13 +198,13 @@ func (c *incomingConn) worker() {
 
 	// Bind the session to the conn, handshake, authenticate.
 	timeoutMs := time.Duration(c.l.glue.Config().Debug.HandshakeTimeout) * time.Millisecond
-	c.c.SetDeadline(time.Now().Add(timeoutMs))
+	_ = c.c.SetDeadline(time.Now().Add(timeoutMs))
 	if err = c.w.Initialize(c.c); err != nil {
 		c.log.Errorf("Handshake failed: %v", err)
 		return
 	}
 	c.log.Debugf("Handshake completed.")
-	c.c.SetDeadline(time.Time{})
+	_ = c.c.SetDeadline(time.Time{})
 	c.l.onInitializedConn(c)
 
 	// Log the connection source.

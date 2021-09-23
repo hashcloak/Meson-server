@@ -19,11 +19,11 @@ package kaetzchen
 import (
 	"testing"
 
+	"github.com/hashcloak/Meson-server/config"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/crypto/rand"
 	"github.com/katzenpost/core/log"
-	"github.com/katzenpost/server/config"
 	"github.com/stretchr/testify/require"
 )
 

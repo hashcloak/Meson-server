@@ -21,14 +21,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashcloak/Meson-server/spool"
+	"github.com/hashcloak/Meson-server/userdb"
 	"github.com/jackc/pgx"
 	"github.com/katzenpost/core/constants"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/sphinx"
 	sConstants "github.com/katzenpost/core/sphinx/constants"
 	"github.com/katzenpost/core/utils"
-	"github.com/katzenpost/server/spool"
-	"github.com/katzenpost/server/userdb"
 )
 
 const (

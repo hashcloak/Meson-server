@@ -292,7 +292,7 @@ func NewPacketFromSURB(pkt *Packet, surb, payload []byte) (*Packet, error) {
 
 	// Assemble the response packet.
 	respPkt, _ := New(rawRespPkt)
-	respPkt.Set(nil, cmds)
+	_ = respPkt.Set(nil, cmds)
 
 	respPkt.RecvAt = pkt.RecvAt
 	respPkt.Delay = time.Duration(nodeDelayCmd.Delay) * time.Millisecond

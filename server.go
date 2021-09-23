@@ -25,22 +25,22 @@ import (
 	"sync"
 
 	"git.schwanenlied.me/yawning/aez.git"
+	"github.com/hashcloak/Meson-server/config"
+	"github.com/hashcloak/Meson-server/internal/cryptoworker"
+	"github.com/hashcloak/Meson-server/internal/decoy"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/incoming"
+	"github.com/hashcloak/Meson-server/internal/instrument"
+	"github.com/hashcloak/Meson-server/internal/outgoing"
+	"github.com/hashcloak/Meson-server/internal/pki"
+	"github.com/hashcloak/Meson-server/internal/provider"
+	"github.com/hashcloak/Meson-server/internal/scheduler"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/crypto/rand"
 	"github.com/katzenpost/core/log"
 	"github.com/katzenpost/core/thwack"
 	"github.com/katzenpost/core/utils"
-	"github.com/katzenpost/server/config"
-	"github.com/katzenpost/server/internal/cryptoworker"
-	"github.com/katzenpost/server/internal/decoy"
-	"github.com/katzenpost/server/internal/glue"
-	"github.com/katzenpost/server/internal/incoming"
-	"github.com/katzenpost/server/internal/instrument"
-	"github.com/katzenpost/server/internal/outgoing"
-	"github.com/katzenpost/server/internal/pki"
-	"github.com/katzenpost/server/internal/provider"
-	"github.com/katzenpost/server/internal/scheduler"
 	"gopkg.in/eapache/channels.v1"
 	"gopkg.in/op/go-logging.v1"
 )
@@ -183,6 +183,12 @@ func (s *Server) halt() {
 		s.scheduler = nil
 	}
 
+	// Flush and close the mix keys.
+	if s.mixKeys != nil {
+		s.mixKeys.Halt()
+		s.mixKeys = nil
+	}
+
 	// Stop the PKI interface.
 	if s.pki != nil {
 		s.pki.Halt()
@@ -191,12 +197,6 @@ func (s *Server) halt() {
 		// PKI calls into the connector/decoy.
 		s.connector = nil
 		s.decoy = nil
-	}
-
-	// Flush and close the mix keys.
-	if s.mixKeys != nil {
-		s.mixKeys.Halt()
-		s.mixKeys = nil
 	}
 
 	// Clean up the top level components.
@@ -249,7 +249,7 @@ func New(cfg *config.Config) (*Server, error) {
 	if s.cfg.Debug.IdentityKey != nil {
 		s.log.Warning("IdentityKey should NOT be used for production deployments.")
 		s.identityKey = new(eddsa.PrivateKey)
-		s.identityKey.FromBytes(s.cfg.Debug.IdentityKey.Bytes())
+		_ = s.identityKey.FromBytes(s.cfg.Debug.IdentityKey.Bytes())
 	} else {
 		identityPrivateKeyFile := filepath.Join(s.cfg.Server.DataDir, "identity.private.pem")
 		identityPublicKeyFile := filepath.Join(s.cfg.Server.DataDir, "identity.public.pem")
@@ -268,6 +268,12 @@ func New(cfg *config.Config) (*Server, error) {
 
 	if s.cfg.Debug.GenerateOnly {
 		return nil, ErrGenerateOnly
+	}
+
+	// Initialize the PKI interface. This should happen first to resolve epochtime.
+	if s.pki, err = pki.New(goo); err != nil {
+		s.log.Errorf("Failed to initialize PKI client: %v", err)
+		return nil, err
 	}
 
 	// Load and or generate mix keys.
@@ -328,12 +334,6 @@ func New(cfg *config.Config) (*Server, error) {
 		})
 	}
 
-	// Initialize the PKI interface.
-	if s.pki, err = pki.New(goo); err != nil {
-		s.log.Errorf("Failed to initialize PKI client: %v", err)
-		return nil, err
-	}
-
 	// Initialize the provider backend.
 	if s.cfg.Server.IsProvider {
 		if s.provider, err = provider.New(goo); err != nil {
@@ -384,7 +384,7 @@ func New(cfg *config.Config) (*Server, error) {
 	// subsystem that wants to register commands has had the opportunity to do
 	// so.
 	if s.management != nil {
-		s.management.Start()
+		_ = s.management.Start()
 	}
 
 	isOk = true

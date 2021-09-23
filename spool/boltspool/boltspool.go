@@ -22,12 +22,12 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	bolt "go.etcd.io/bbolt"
+	"github.com/hashcloak/Meson-server/spool"
+	"github.com/hashcloak/Meson-server/userdb"
 	"github.com/katzenpost/core/constants"
 	"github.com/katzenpost/core/sphinx"
 	sConstants "github.com/katzenpost/core/sphinx/constants"
-	"github.com/katzenpost/server/spool"
-	"github.com/katzenpost/server/userdb"
+	bolt "go.etcd.io/bbolt"
 )
 
 const (
@@ -41,7 +41,7 @@ type boltSpool struct {
 }
 
 func (s *boltSpool) Close() {
-	s.db.Sync()
+	_ = s.db.Sync()
 	s.db.Close()
 }
 
@@ -93,9 +93,9 @@ func (s *boltSpool) doStore(u []byte, id *[sConstants.SURBIDLength]byte, msg []b
 		}
 
 		// Store the message and (optional) SURB ID.
-		mBkt.Put([]byte(msgKey), msg)
+		_ = mBkt.Put([]byte(msgKey), msg)
 		if id != nil {
-			mBkt.Put([]byte(surbIDKey), id[:])
+			_ = mBkt.Put([]byte(surbIDKey), id[:])
 		}
 		return nil
 	})
@@ -115,7 +115,9 @@ func (s *boltSpool) Get(u []byte, advance bool) (msg, surbID []byte, remaining i
 	if err != nil {
 		return
 	}
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback()
+	}()
 
 	// Grab the `users` bucket.
 	uBkt := tx.Bucket([]byte(usersBucket))
@@ -149,7 +151,7 @@ func (s *boltSpool) Get(u []byte, advance bool) (msg, surbID []byte, remaining i
 
 		if next == nil {
 			// Deleting the message drained the queue.
-			sBkt.SetSequence(0) // Don't keep a lifetime message count.
+			_ = sBkt.SetSequence(0) // Don't keep a lifetime message count.
 			remaining = 0
 			err = tx.Commit()
 			return
@@ -251,7 +253,7 @@ func New(f string) (spool.Spool, error) {
 		}
 
 		// We created a new database, so populate the new `metadata` bucket.
-		bkt.Put([]byte(versionKey), []byte{0})
+		_ = bkt.Put([]byte(versionKey), []byte{0})
 
 		return nil
 	}); err != nil {
