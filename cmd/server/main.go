@@ -24,7 +24,7 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/hashcloak/Meson-server"
+	server "github.com/hashcloak/Meson-server"
 	"github.com/hashcloak/Meson-server/config"
 )
 
@@ -57,10 +57,10 @@ func main() {
 
 	// Setup the signal handling.
 	haltCh := make(chan os.Signal)
-	signal.Notify(haltCh, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(haltCh, os.Interrupt, syscall.SIGTERM) // nolint
 
 	rotateCh := make(chan os.Signal)
-	signal.Notify(rotateCh, syscall.SIGHUP)
+	signal.Notify(rotateCh, syscall.SIGHUP) // nolint
 
 	// Start up the server.
 	svr, err := server.New(cfg)
