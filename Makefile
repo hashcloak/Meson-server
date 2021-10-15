@@ -19,7 +19,7 @@ test:
 
 .PHONY: build
 build:
-	go build -tags=$(GOTAGS) -o meson-server cmd/server/*.go
+	go build -tags=$(GOTAGS) -o meson-server cmd/meson-server/*.go
 
 .PHONY: build-docker
 build-docker:
