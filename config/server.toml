@@ -7,7 +7,7 @@
 [Server]
 
   # Identifier is the human readable identifier for the node (eg: FQDN).
-  Identifier = "greatect.provider"
+  Identifier = "test.provider"
 
   # Addresses are the IP address/port combinations that the server will bind
   # to for incoming connections.
@@ -38,16 +38,16 @@
 
   [PKI.Voting]
     ChainID = "katzenmint-chain-71DRoz"
-    PrimaryAddress = "tcp://127.0.0.1:21483"
-    WitnessesAddresses = [ "127.0.0.1:21483" ]
-    DatabaseName = "test_meson_server_pkiclient_db"
+    PrimaryAddress = "tcp://104.131.108.194:26657"
+    WitnessesAddresses = [ "165.227.158.164:26657", "165.227.90.185:26657", "104.131.108.194:26657" ]
+    DatabaseName = "pkiclient_db"
     DatabaseDir = "/tmp/meson_server/server_data"
-    RPCAddress = "tcp://127.0.0.1:21483"
+    RPCAddress = "tcp://104.131.108.194:26657"
 
     [PKI.Voting.TrustOptions]
-      Period = 36000000000000
+      Period = 600000000000
       Height = 1
-      Hash = [ 168, 130, 77, 22, 134, 51, 143, 62, 192, 81, 155, 65, 197, 93, 101, 27, 130, 49, 73, 189, 22, 82, 165, 106, 213, 15, 35, 134, 136, 133, 246, 18]
+      Hash = [168, 130, 77, 22, 134, 51, 143, 62, 192, 81, 155, 65, 197, 93, 101, 27, 130, 49, 73, 189, 22, 82, 165, 106, 213, 15, 35, 134, 136, 133, 246, 18]
 
 #
 # The Logging section controls the logging.
