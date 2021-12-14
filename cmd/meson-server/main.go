@@ -31,6 +31,7 @@ import (
 func main() {
 	cfgFile := flag.String("f", "katzenpost.toml", "Path to the server config file.")
 	genOnly := flag.Bool("g", false, "Generate the keys and exit immediately.")
+	testConfig := flag.Bool("t", false, "Test meson server config.")
 	flag.Parse()
 
 	// Set the umask to something "paranoid".
@@ -53,6 +54,10 @@ func main() {
 	}
 	if *genOnly && !cfg.Debug.GenerateOnly {
 		cfg.Debug.GenerateOnly = true
+	}
+	if *testConfig {
+		fmt.Printf("The Meson server configuration looks good.\n")
+		os.Exit(0)
 	}
 
 	// Setup the signal handling.
