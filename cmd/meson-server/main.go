@@ -24,13 +24,14 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/katzenpost/server"
-	"github.com/katzenpost/server/config"
+	server "github.com/hashcloak/Meson-server"
+	"github.com/hashcloak/Meson-server/config"
 )
 
 func main() {
 	cfgFile := flag.String("f", "katzenpost.toml", "Path to the server config file.")
 	genOnly := flag.Bool("g", false, "Generate the keys and exit immediately.")
+	testConfig := flag.Bool("t", false, "Test meson server config.")
 	flag.Parse()
 
 	// Set the umask to something "paranoid".
@@ -54,13 +55,17 @@ func main() {
 	if *genOnly && !cfg.Debug.GenerateOnly {
 		cfg.Debug.GenerateOnly = true
 	}
+	if *testConfig {
+		fmt.Printf("The Meson server configuration looks good.\n")
+		os.Exit(0)
+	}
 
 	// Setup the signal handling.
 	haltCh := make(chan os.Signal)
-	signal.Notify(haltCh, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(haltCh, os.Interrupt, syscall.SIGTERM) // nolint
 
 	rotateCh := make(chan os.Signal)
-	signal.Notify(rotateCh, syscall.SIGHUP)
+	signal.Notify(rotateCh, syscall.SIGHUP) // nolint
 
 	// Start up the server.
 	svr, err := server.New(cfg)

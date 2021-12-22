@@ -19,9 +19,9 @@ package kaetzchen
 import (
 	"bytes"
 
-	"github.com/katzenpost/server/config"
-	"github.com/katzenpost/server/internal/glue"
-	"github.com/katzenpost/server/userdb"
+	"github.com/hashcloak/Meson-server/config"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/userdb"
 	"github.com/ugorji/go/codec"
 	"gopkg.in/op/go-logging.v1"
 )
@@ -114,7 +114,7 @@ func (k *kaetzchenKeyserver) Halt() {
 func (k *kaetzchenKeyserver) encodeResp(resp *keyserverResponse) []byte {
 	var out []byte
 	enc := codec.NewEncoderBytes(&out, &k.jsonHandle)
-	enc.Encode(resp)
+	_ = enc.Encode(resp)
 	return out
 }
 

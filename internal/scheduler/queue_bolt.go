@@ -24,11 +24,11 @@ import (
 	"path/filepath"
 	"time"
 
-	bolt "go.etcd.io/bbolt"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/packet"
 	"github.com/katzenpost/core/monotime"
 	"github.com/katzenpost/core/sphinx/commands"
-	"github.com/katzenpost/server/internal/glue"
-	"github.com/katzenpost/server/internal/packet"
+	bolt "go.etcd.io/bbolt"
 	"gopkg.in/op/go-logging.v1"
 )
 
@@ -80,29 +80,29 @@ func packetToBoltBkt(parentBkt *bolt.Bucket, pkt *packet.Packet, prio time.Durat
 	}
 	rawBuf := make([]byte, 0, len(pkt.Raw))
 	rawBuf = append(rawBuf, pkt.Raw...)
-	bkt.Put([]byte(boltPacketRawKey), rawBuf)
+	_ = bkt.Put([]byte(boltPacketRawKey), rawBuf)
 	if pkt.Payload != nil {
 		payloadBuf := make([]byte, 0, len(pkt.Payload))
 		payloadBuf = append(payloadBuf, pkt.Payload...)
-		bkt.Put([]byte(boltPacketPayloadKey), payloadBuf)
+		_ = bkt.Put([]byte(boltPacketPayloadKey), payloadBuf)
 	}
 
 	cmdBuf := make([]byte, 0, boltPacketCommandsSize)
 	cmdBuf = pkt.NextNodeHop.ToBytes(cmdBuf)
 	cmdBuf = pkt.NodeDelay.ToBytes(cmdBuf)
-	bkt.Put([]byte(boltPacketCommandsKey), cmdBuf)
+	_ = bkt.Put([]byte(boltPacketCommandsKey), cmdBuf)
 
 	var timesBuf [boltPacketTimesSize]byte
 	binary.BigEndian.PutUint64(timesBuf[0:], uint64(pkt.Delay))
 	binary.BigEndian.PutUint64(timesBuf[8:], uint64(pkt.RecvAt))
 	binary.BigEndian.PutUint64(timesBuf[16:], uint64(pkt.DispatchAt))
-	bkt.Put([]byte(boltPacketTimesKey), timesBuf[:])
+	_ = bkt.Put([]byte(boltPacketTimesKey), timesBuf[:])
 
 	// Pointless, this flag isn't examined past the crypto worker,
 	// because it's sole purpose is to prevent a client from sending
 	// to a local user, but save it anyway.
 	if pkt.MustForward {
-		bkt.Put([]byte(boltPacketMustForwardKey), boltPacketMustForward)
+		_ = bkt.Put([]byte(boltPacketMustForwardKey), boltPacketMustForward)
 	}
 
 	return nil
@@ -235,7 +235,7 @@ func (q *boltQueue) Pop() {
 			}
 
 			// Regardless of what happened, obliterate the bucket.
-			packetsBkt.DeleteBucket(k)
+			_ = packetsBkt.DeleteBucket(k)
 			removed++
 
 			if pkt != nil {

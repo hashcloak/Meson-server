@@ -25,9 +25,9 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/hashcloak/Meson-server/internal/constants"
+	"github.com/hashcloak/Meson-server/internal/glue"
 	"github.com/katzenpost/core/worker"
-	"github.com/katzenpost/server/internal/constants"
-	"github.com/katzenpost/server/internal/glue"
 	"gopkg.in/op/go-logging.v1"
 )
 
@@ -88,8 +88,8 @@ func (l *listener) worker() {
 		}
 
 		tcpConn := conn.(*net.TCPConn)
-		tcpConn.SetKeepAlive(true)
-		tcpConn.SetKeepAlivePeriod(constants.KeepAliveInterval)
+		_ = tcpConn.SetKeepAlive(true)
+		_ = tcpConn.SetKeepAlivePeriod(constants.KeepAliveInterval)
 
 		l.log.Debugf("Accepted new connection: %v", conn.RemoteAddr())
 

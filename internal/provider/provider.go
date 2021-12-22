@@ -28,6 +28,19 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashcloak/Meson-server/config"
+	internalConstants "github.com/hashcloak/Meson-server/internal/constants"
+	"github.com/hashcloak/Meson-server/internal/debug"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/packet"
+	"github.com/hashcloak/Meson-server/internal/provider/kaetzchen"
+	"github.com/hashcloak/Meson-server/internal/sqldb"
+	"github.com/hashcloak/Meson-server/registration"
+	"github.com/hashcloak/Meson-server/spool"
+	"github.com/hashcloak/Meson-server/spool/boltspool"
+	"github.com/hashcloak/Meson-server/userdb"
+	"github.com/hashcloak/Meson-server/userdb/boltuserdb"
+	"github.com/hashcloak/Meson-server/userdb/externuserdb"
 	"github.com/katzenpost/core/constants"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/monotime"
@@ -37,29 +50,16 @@ import (
 	"github.com/katzenpost/core/utils"
 	"github.com/katzenpost/core/wire"
 	"github.com/katzenpost/core/worker"
-	"github.com/katzenpost/server/config"
-	internalConstants "github.com/katzenpost/server/internal/constants"
-	"github.com/katzenpost/server/internal/debug"
-	"github.com/katzenpost/server/internal/glue"
-	"github.com/katzenpost/server/internal/packet"
-	"github.com/katzenpost/server/internal/provider/kaetzchen"
-	"github.com/katzenpost/server/internal/sqldb"
-	"github.com/katzenpost/server/registration"
-	"github.com/katzenpost/server/spool"
-	"github.com/katzenpost/server/spool/boltspool"
-	"github.com/katzenpost/server/userdb"
-	"github.com/katzenpost/server/userdb/boltuserdb"
-	"github.com/katzenpost/server/userdb/externuserdb"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/text/secure/precis"
 	"gopkg.in/eapache/channels.v1"
 	"gopkg.in/op/go-logging.v1"
 )
 
-type registerIdentityRequest struct {
-	User              string
-	IdentityPublicKey string
-}
+// type registerIdentityRequest struct {
+// 	User              string
+// 	IdentityPublicKey string
+// }
 
 type provider struct {
 	sync.Mutex
@@ -643,7 +643,7 @@ func (p *provider) processLinkRegistration(user []byte, response http.ResponseWr
 
 	// Send a response back to the client.
 	message := "OK\n"
-	response.Write([]byte(message))
+	_, _ = response.Write([]byte(message))
 }
 
 func (p *provider) processIdentityRegistration(user []byte, response http.ResponseWriter, request *http.Request) {
@@ -696,7 +696,7 @@ func (p *provider) processIdentityRegistration(user []byte, response http.Respon
 
 	// Send a response back to the client.
 	message := "OK\n"
-	response.Write([]byte(message))
+	_, _ = response.Write([]byte(message))
 }
 
 func (p *provider) stopUserRegistrationHTTP() {

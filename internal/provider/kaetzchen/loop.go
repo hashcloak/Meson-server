@@ -17,8 +17,8 @@
 package kaetzchen
 
 import (
-	"github.com/katzenpost/server/config"
-	"github.com/katzenpost/server/internal/glue"
+	"github.com/hashcloak/Meson-server/config"
+	"github.com/hashcloak/Meson-server/internal/glue"
 	"gopkg.in/op/go-logging.v1"
 )
 

@@ -64,7 +64,7 @@ type Parameters map[string]string
 // ServicePlugin is the interface that we expose for external
 // plugins to implement. This is similar to the internal Kaetzchen
 // interface defined in:
-// github.com/katzenpost/server/internal/provider/kaetzchen/kaetzchen.go
+// github.com/hashcloak/Meson-server/internal/provider/kaetzchen/kaetzchen.go
 type ServicePlugin interface {
 	// OnRequest is the method that is called when the Provider receives
 	// a request designed for a particular agent. The caller will handle
@@ -98,7 +98,7 @@ type Client struct {
 	socketPath string
 	endpoint   string
 	capability string
-	params     *Parameters
+	// params     *Parameters
 }
 
 // New creates a new plugin client instance which represents the single execution
@@ -127,7 +127,7 @@ func (c *Client) Start(command string, args []string) error {
 
 func (c *Client) worker() {
 	<-c.HaltCh()
-	c.cmd.Process.Signal(syscall.SIGTERM)
+	_ = c.cmd.Process.Signal(syscall.SIGTERM)
 	err := c.cmd.Wait()
 	if err != nil {
 		c.log.Errorf("CBOR plugin worker, command exec error: %s\n", err)

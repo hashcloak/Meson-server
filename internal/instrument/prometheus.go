@@ -10,5 +10,7 @@ import (
 func Init() {
 	// Expose registered metrics via HTTP
 	http.Handle("/metrics", promhttp.Handler())
-	go http.ListenAndServe(":6543", nil)
+	go func() {
+		_ = http.ListenAndServe(":6543", nil)
+	}()
 }

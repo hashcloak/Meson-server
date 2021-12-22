@@ -24,12 +24,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashcloak/Meson-server/cborplugin"
+	"github.com/hashcloak/Meson-server/internal/glue"
+	"github.com/hashcloak/Meson-server/internal/packet"
 	"github.com/katzenpost/core/monotime"
 	sConstants "github.com/katzenpost/core/sphinx/constants"
 	"github.com/katzenpost/core/worker"
-	"github.com/katzenpost/server/cborplugin"
-	"github.com/katzenpost/server/internal/glue"
-	"github.com/katzenpost/server/internal/packet"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/text/secure/precis"
 	"gopkg.in/eapache/channels.v1"
@@ -173,7 +173,7 @@ func (k *CBORPluginWorker) KaetzchenForPKI() ServiceMap {
 	s := make(ServiceMap)
 	for _, k := range k.clients {
 		capa := k.Capability()
-		if _, ok :=  s[capa]; ok {
+		if _, ok := s[capa]; ok {
 			// skip adding twice
 			continue
 		}

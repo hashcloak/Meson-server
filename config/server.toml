@@ -7,14 +7,15 @@
 [Server]
 
   # Identifier is the human readable identifier for the node (eg: FQDN).
-  Identifier = "example.com"
+  Identifier = "test.provider"
 
   # Addresses are the IP address/port combinations that the server will bind
   # to for incoming connections.
-  Addresses = [ "192.0.2.1:29483", "[2001:DB8::1]:29483" ]
+  Addresses = [ "127.0.0.1:29483", "[::1]:29483" ]
 
   # DataDir is the absolute path to the server's state files.
-  DataDir = "/var/lib/katzenpost"
+  # DataDir = "/var/lib/katzenpost"
+  DataDir = "/tmp/meson_server/data"
 
   # IsProvider specifies if the server is a provider (vs a mix).
   IsProvider = true
@@ -26,14 +27,27 @@
 [PKI]
 
   # Nonvoting is a simple non-voting PKI for test deployments.
-  [PKI.Nonvoting]
+  # [PKI.Nonvoting]
 
     # Address is the IP address/port combination of the directory authority.
-    Address = "192.0.2.2:2323"
+    # Address = "192.0.2.2:2323"
 
     # PublicKey is the directory authority's public key in Base64 or Base16 format.
-    PublicKey = "kAiVchOBwHVtKJVFJLsdCQ9UyN2SlfhLHYqT8ePBetg="
+    # PublicKey = "kAiVchOBwHVtKJVFJLsdCQ9UyN2SlfhLHYqT8ePBetg="
     # PublicKey = "900895721381C0756D28954524BB1D090F54C8DD9295F84B1D8A93F1E3C17AD8"
+
+  [PKI.Voting]
+    ChainID = "katzenmint-chain-71DRoz"
+    PrimaryAddress = "tcp://104.131.108.194:26657"
+    WitnessesAddresses = [ "165.227.158.164:26657", "165.227.90.185:26657", "104.131.108.194:26657" ]
+    DatabaseName = "pkiclient_db"
+    DatabaseDir = "/tmp/meson_server/server_data"
+    RPCAddress = "tcp://104.131.108.194:26657"
+
+    [PKI.Voting.TrustOptions]
+      Period = 600000000000
+      Height = 1
+      Hash = [168, 130, 77, 22, 134, 51, 143, 62, 192, 81, 155, 65, 197, 93, 101, 27, 130, 49, 73, 189, 22, 82, 165, 106, 213, 15, 35, 134, 136, 133, 246, 18]
 
 #
 # The Logging section controls the logging.
@@ -78,12 +92,12 @@
     Disable = false
 
   # Here's an example external Kaetzchen service plugin config
-  [[Provider.PluginKaetzchen]]
-    Capability = "echo"
-    Endpoint = "+echo"
-    Disable = false
-    Command = "/var/lib/katzenpost/plugins/echo"
-    MaxConcurrency = 3
+  #[[Provider.PluginKaetzchen]]
+  #  Capability = "echo"
+  #  Endpoint = "+echo"
+  #  Disable = false
+  #  Command = "/var/lib/katzenpost/plugins/echo"
+  #  MaxConcurrency = 3
 
   # UserDB is the user database configuration.  If left empty the simple
   # BoltDB backed user database will be used with the default database.
