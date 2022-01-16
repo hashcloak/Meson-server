@@ -91,8 +91,8 @@ func (co *connector) DispatchPacket(pkt *packet.Packet) {
 
 func (co *connector) worker() {
 	const (
-		initialSpawnDelay = 15 * time.Second
-		resweepInterval   = 3 * time.Minute
+		initialSpawnDelay = 3 * time.Second
+		resweepInterval   = 4 * time.Second
 	)
 
 	timer := time.NewTimer(initialSpawnDelay)
