@@ -123,8 +123,8 @@ func (c *outgoingConn) dispatchPacket(pkt *packet.Packet) {
 func (c *outgoingConn) worker() {
 
 	const (
-		retryIncrement = 15 * time.Second
-		maxRetryDelay  = 120 * time.Second
+		retryIncrement = 2 * time.Second
+		maxRetryDelay  = 5 * time.Second
 	)
 
 	defer func() {
